@@ -28,8 +28,14 @@
 	}
 	$AutoDeletion->AutoDeletionTrigger = $AutoDeletionTrigger;
 	
+	$LockFilePath = "./share/ImageList.lock";
+	$LockFileOpen = fopen( $LockFilePath,"a" );
+	flock( $LockFileOpen,LOCK_EX );
+	
 	//スキャンして自動削除を開始する
 	$DeletionDate = $AutoDeletion->ScanAutoDelete();
+	
+	fclose($LockFileOpen);
 	
 	if( $DeletionDate ){
 		echo "［ｉ］自動削除ログファイルを更新しました\n";

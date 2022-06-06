@@ -52,6 +52,8 @@
 	$SaveDay = 5;
 
 	//☆画像の最大サイズ(MB)
+	//　アップロード可能なサイズは、PHPの設定 upload_max_filesize および post_max_size によっても制限を受けます。
+	//　詳しくはPHPマニュアルを参照してください。
 	$LimitSize = 5;
 	
 	//☆画像の同時アップロード枚数

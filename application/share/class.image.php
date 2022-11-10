@@ -15,7 +15,7 @@ class Image {
     var $crop = false;
     var $type;
     
-    function Image($name='') {
+    function __construct($name='') {
         $this->file = $name;
         $info = getimagesize($name);
         $this->image_width = $info[0];

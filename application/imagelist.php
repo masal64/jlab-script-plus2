@@ -40,14 +40,14 @@
 		//送信された履歴を取得する
 		$ImageHistory = json_decode($_POST["history"], true);
 		
-		//ImageListからファイル名のみ抽出する
-		$FileNameArray = array_column($ImageList, "Name");
+		//ImageListからファイル名をKeyとした(連想)配列を作成する
+		$FileNameArray = array_flip(array_column($ImageList, "Name"));
 		
 		//履歴中のファイル名がImageList.jsonにも存在するか確認する
 		$NewImageHistory = array();
-		for( $i=0; $i < count($ImageHistory); $i++ ){
-			if( in_array($ImageHistory[$i], $FileNameArray) ){
-				$NewImageHistory[$i] = $ImageHistory[$i];
+		foreach( $ImageHistory as $ImageFileName ){
+			if( array_key_exists($ImageFileName, $FileNameArray) ){
+				$NewImageHistory[] = $ImageFileName;
 			}
 		}
 		

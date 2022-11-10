@@ -52,6 +52,8 @@
 	$SaveDay = 5;
 
 	//☆画像の最大サイズ(MB)
+	//　アップロード可能なサイズは、PHPの設定 upload_max_filesize および post_max_size によっても制限を受けます。
+	//　詳しくはPHPマニュアルを参照してください。
 	$LimitSize = 5;
 	
 	//☆画像の同時アップロード枚数
@@ -94,7 +96,9 @@
 	//　mod_rewrite機能またはURL書き換え機能を使って画像配信URLを変更するときに設定します。特に使用しない場合は空欄にしてください。
 	//　mod_rewrite機能の詳しい説明についてはApacheサイト・nginxサイトや書籍等をご覧ください。
 	//　http://jikkyo.org/jlab-script-plus/s/123.jpg を http://jikkyo.org/img/123.jpg にリライトして配信するには設定に $RewriteURL = 'http://jikkyo.org/img/'; と設定してください。
+	//　$ThumbRewriteURL はサムネイル画像の配信URLを変更するものです。どちらか片方のみを設定することもできます。
 	$RewriteURL = '';
+	$ThumbRewriteURL = '';
 	
 	/*
 	
@@ -201,7 +205,7 @@
 			$TempleteIndex = str_replace("<!--##Admin##-->", $Admin, $TempleteIndex);
 			$TempleteIndex = str_replace("<!--##LimitSize##-->", $LimitSize, $TempleteIndex);
 			$TempleteIndex = str_replace("<!--##LimitCount##-->", $LimitCount, $TempleteIndex);
-			$ImageURL = "{$FullURL}{$SaveFolder}/";
+			$ImageURL = $RewriteURL != "" ? $RewriteURL : "{$FullURL}{$SaveFolder}/";
 			$TempleteIndex = str_replace("<!--##ImageURL##-->", $ImageURL, $TempleteIndex);
 			$TempleteIndex = str_replace("<!--##FileBaseName##-->", $FileBaseName, $TempleteIndex);
 			$TempleteIndex = str_replace("<!--##SaveDays##-->", $SaveDay, $TempleteIndex);
@@ -218,7 +222,8 @@
 			$TempleteMaster = str_replace("<!--##LimitCount##-->", $LimitCount, $TempleteMaster);
 			$TempleteMaster = str_replace("<!--##ImageURL##-->", $ImageURL, $TempleteMaster);
 			$TempleteMaster = str_replace("<!--##FastUpload##-->", var_export($FastUpload, true), $TempleteMaster);
-			$TempleteMaster = str_replace("<!--##ThumbDirectory##-->", $ThumbSaveFolder, $TempleteMaster);
+			$ThumbURL = $ThumbRewriteURL != "" ? $ThumbRewriteURL : "./{$ThumbSaveFolder}/";
+			$TempleteMaster = str_replace("<!--##ThumbURL##-->", $ThumbURL, $TempleteMaster);
 			if( file_put_contents("./master.js", $TempleteMaster) === false ){
 				echo "［！］master.js の保存に失敗しました\n\n";
 				exit;

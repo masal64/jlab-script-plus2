@@ -482,6 +482,7 @@
 		document.title = MasterSettings.Title;
 		
 		//プレビューを非表示
+		document.getElementById("PreviewAreaCover").style.display = "none";
 		DOMControl.MessageText = "アップロードする画像を<strong>ドラッグアンドドロップ</strong>するか<strong>選択</strong>してください";
 		DOMControl.DisablePreview();
 		DOMControl.UpdateMessageText();

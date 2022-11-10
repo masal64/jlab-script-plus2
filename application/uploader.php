@@ -77,8 +77,8 @@
 
 	//現在の時間を取得する（これがファイル名）
 	if( $MicroSec ){
-		$getMicroTime = explode(".",microtime(true));
-		$FileName = $FileBaseName.date("ymdHis").$getMicroTime[1];
+		$getMicroTime = explode(".",number_format(microtime(true),4,'.',''));
+		$FileName = $FileBaseName.date("ymdHis",$getMicroTime[0]).$getMicroTime[1];
 	}else{
 		$FileName = $FileBaseName.date("ymdHis");
 	}

@@ -224,7 +224,7 @@
 			DisplayStream.ImageNames[ci] = ImageListRes[ci]["Name"];
 			OutputHTML += "<li id=\"ImageList-" + ImageListRes[ci]["Name"] + "\" data-selected=\"0\" data-icount=\"" + ci + "\" data-iname=\"" + ImageListRes[ci]["Name"] + "\">\n";
 			OutputHTML += "<img-title>投稿日時：" + ImageListRes[ci]["Time"] + "<img-info> " + ImageListRes[ci]["Meta"] + "</img-info></img-title>\n";
-			OutputHTML += "<a href=\"" + MasterSettings.ImageURL + ImageListRes[ci]["Name"] + "\" target=\"_blank\"><img src=\"./" + MasterSettings.ThumbDirectory + "/" + ImageListRes[ci]["Name"] + "\"></a>\n";
+			OutputHTML += "<a href=\"" + MasterSettings.ImageURL + ImageListRes[ci]["Name"] + "\" target=\"_blank\"><img src=\"" + MasterSettings.ThumbURL + ImageListRes[ci]["Name"] + "\"></a>\n";
 			OutputHTML += "<input type=\"text\" class=\"DefaultTB\" value=\"" + MasterSettings.ImageURL + ImageListRes[ci]["Name"] + "\" onclick=\"this.select(0,this.value.length)\" readonly>\n";
 			OutputHTML += "<input type=\"button\" class=\"PositiveBT\" value=\"選択切替\" onclick=\"ClickSelectImage(this.parentNode, event)\">\n";
 			OutputHTML += "<input type=\"button\" class=\"PositiveBT\" value=\"画像URLをコピー\" onclick=\"CopyImageURL(this.parentNode, 'input')\">\n";
@@ -292,7 +292,7 @@
 			
 			DisplayStream.ImageNames[ci] = ImageListRes["UploadedImages"][ci];
 			OutputHTML += "<li id=\"ImageList-" + ImageListRes["UploadedImages"][ci] + "\" data-selected=\"0\" data-icount=\"" + ci + "\" data-iname=\"" + ImageListRes["UploadedImages"][ci] + "\">\n";
-			OutputHTML += "<a href=\"" + MasterSettings.ImageURL + ImageListRes["UploadedImages"][ci] + "\" target=\"_blank\"><img src=\"./" + MasterSettings.ThumbDirectory + "/" + ImageListRes["UploadedImages"][ci] + "\"></a>\n";
+			OutputHTML += "<a href=\"" + MasterSettings.ImageURL + ImageListRes["UploadedImages"][ci] + "\" target=\"_blank\"><img src=\"" + MasterSettings.ThumbURL + ImageListRes["UploadedImages"][ci] + "\"></a>\n";
 			OutputHTML += "<input type=\"text\" class=\"DefaultTB\" value=\"" + MasterSettings.ImageURL + ImageListRes["UploadedImages"][ci] + "\" onclick=\"this.select(0,this.value.length)\" readonly>\n";
 			OutputHTML += "<input type=\"button\" class=\"PositiveBT\" value=\"選択切替\"  onclick=\"ClickSelectImage(this.parentNode, event)\">\n";
 			OutputHTML += "<input type=\"button\" class=\"PositiveBT\" value=\"画像URLをコピー\" onclick=\"CopyImageURL(this.parentNode, 'input')\">\n";

@@ -12,4 +12,4 @@
 	MasterSettings.LimitCount = <!--##LimitCount##-->;
 	MasterSettings.FastUpload = <!--##FastUpload##-->;
 	MasterSettings.ImageURL = "<!--##ImageURL##-->";
-	MasterSettings.ThumbDirectory = "<!--##ThumbDirectory##-->";
+	MasterSettings.ThumbURL = "<!--##ThumbURL##-->";

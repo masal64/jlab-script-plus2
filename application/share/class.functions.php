@@ -2,135 +2,201 @@
 
 	/*
 		class.functions.php
-		jlab-script-plus 2.0 beta2
+		jlab-script-plus2 Beta3
 	*/
-	
-	//画像編集用クラス
-	class EditImages {
-	
-		//[ $ImageName ]はjpg/gif/pngのデータを指定する
-		public $ImageName;
-		public $DeleteKey;
-		public $SaveDay;
-		public $AutoDeletionTrigger;
-		
-		//プライベート変数初期化
-		private $ImageData;
-		private $ImageDataPath;
-		private $ImageNameNumber;
-		private $ExtensionID;
-		private $ImageListPath;
-		private $ImageList;
-		private $FileNameArray;
-		private $FileNameArrayKey;
-		private $FileNameArrayValue;
-		private $ImageNameKey;
-		private $ymdToday;
-		private $AutoDeletionLog;
-		private $AutoDeletionLogPath;
-		private $UploadedDay;
-		
-		public function CheckDeleteKey(){
-		
+
+	class ImageManager {
+
+		public $ExpiredPrefix;
+
+		//画像データを取得する
+		public function GetImageInfo($ImageName, $InfoType){
+
 			global $LogFolder;
-		
-			list( $this->ImageNameNumber, $this->ExtensionID ) = explode(".", $this->ImageName);
-			$this->ImageDataPath = "../{$LogFolder}/".$this->ImageNameNumber.".json";
-			if( !file_exists( $this->ImageDataPath ) ){
-				return 404;
+
+			//画像名から拡張子を外す
+			list($ImageNamePure, $ImageExtension) = explode(".", $ImageName);
+
+			//画像が存在しない場合はfalseを返す
+			if( !file_exists("../{$LogFolder}/{$ImageNamePure}.json")){ return false; }
+
+			//画像データjsonを取得する
+			$ImageData = file_get_contents("../{$LogFolder}/{$ImageNamePure}.json");
+			$ImageData = json_decode($ImageData, true);
+			
+			//要求されたデータを返す(Allの場合はそのまま配列で返す)
+			if( $InfoType == "All" ){
+				return $ImageData;
 			}else{
-				$this->ImageData = json_decode(file_get_contents($this->ImageDataPath), true);
-				if( $this->DeleteKey === $this->ImageData["DeleteKey"] ){
-					return 200;
-				}else{
-					return 403;
-				}
+				return $ImageData[$InfoType];
 			}
 		}
-		
-		public function CheckAutoDeleteTrigger(){
-		
-			global $LogFolder;
-			global $FileBaseName;
-			global $AutoDeletionConfig;
-			
-			$this->ymdToday = $FileBaseName.date($AutoDeletionConfig, strtotime("-{$this->SaveDay} days"));
-			
-			$this->AutoDeletionLogPath = "../{$LogFolder}/AutoDeletion.json";
-			if( file_exists( $this->AutoDeletionLogPath ) ){
-				$this->AutoDeletionLog = json_decode(file_get_contents($this->AutoDeletionLogPath), true);
-				if(!in_array($this->ymdToday, $this->AutoDeletionLog)){
-					return 1; //まだ自動削除が実行されていない
-				}else{
-					return 2; //既に自動削除が実行済み
-				}
-			}else{
-				$this->AutoDeletionLog = [];
-				return 3; //まだ実行されていない(ログファイルも見つからない場合)
-			}
-			
-		}
-		
-		public function ScanAutoDelete(){
-			
-			global $AutoDeletionConfig;
-			
-			$this->LoadImageList_array();
-			$this->ymdTodayNumber = date($AutoDeletionConfig, strtotime("-{$this->SaveDay} days") );
-			$this->ymdTodayCount = mb_strlen($this->ymdTodayNumber);
-			
-			foreach( $this->FileNameArray as $this->FileNameArrayKey => $this->FileNameArrayValue ){
-				$this->UploadedDay = substr(preg_replace("~[^0-9]~", "", $this->FileNameArrayValue), 0, $this->ymdTodayCount);
-				if( $this->UploadedDay <= $this->ymdTodayNumber ){
-					$this->ImageName = $this->FileNameArrayValue;
-					$this->DeleteImage();
-					unset($this->ImageList[$this->FileNameArrayKey]);
-				}else{
-					continue;
-				}
-			}
-			$this->SaveImageList();
-			
-			if( $this->AutoDeletionTrigger === 3 ){
-				$this->AutoDeletionLog[] = $this->ymdToday;
-			}else{
-				array_unshift($this->AutoDeletionLog, $this->ymdToday);
-			}
-			file_put_contents($this->AutoDeletionLogPath, json_encode($this->AutoDeletionLog));
-			return $this->ymdToday; //実行終了
-		}
-		
-		public function DeleteImage(){
-			
+
+		//画像を削除する
+		public function DeleteImage($ImageName){
+
 			global $SaveFolder;
 			global $ThumbSaveFolder;
 			global $LogFolder;
-			
-			unlink("../{$SaveFolder}/{$this->ImageName}");
-			unlink("../{$ThumbSaveFolder}/{$this->ImageName}");
-			list( $this->ImageNameNumber, $this->ExtensionID ) = explode(".", $this->ImageName);
-			unlink("../{$LogFolder}/".$this->ImageNameNumber.".json");
-			
+
+			unlink("../{$SaveFolder}/{$ImageName}");
+			unlink("../{$ThumbSaveFolder}/{$ImageName}");
+			list($ImageNamePure, $ImageExtension) = explode(".", $ImageName);
+			unlink("../{$LogFolder}/".$ImageNamePure.".json");
+
 		}
-		
-		public function LoadImageList_array(){
+
+		//期限切れの画像を取得する
+		public function ScanExpiredImages(){
 			
-			global $LogFolder;
-			
-			$this->ImageListPath = "../{$LogFolder}/ImageList.json";
-			$this->ImageList = json_decode(file_get_contents($this->ImageListPath), true);
-			$this->FileNameArray = array_column($this->ImageList, "Name");
-		
+			$ImageListManager = new ImageListManager();
+			list($ImageList, $ListLoader) = $ImageListManager->Load();
+
+			//ファイル名だけのリストを作成する
+			$FileNameList = array_column($ImageList, "Name");
+
+			//期限切れ日付を設定する
+			$ExpiredPrefixCount = mb_strlen($this->ExpiredPrefix);
+
+			//期限切れ画像のファイル名を入れる配列
+			$ExpiredImages = array();
+
+			foreach( $FileNameList as $FileName ){
+
+				/*
+				ファイル名から、AutoDeletionConfigで設定された文字数だけ切り出す
+
+				例：2310231224245673.jpg / $AutoDeletionConfig = 'ymdH' の時、
+				　　y=23, m=10, d=23, H=12 の合計8バイトを切り出すので、
+				　　$UploadedDay には 23102312 が代入される。
+				*/
+				$UploadedDay = substr(preg_replace("~[^0-9]~", "", $FileName), 0, $ExpiredPrefixCount);
+
+				if( $UploadedDay <= $this->ExpiredPrefix ){
+					$ExpiredImages[] = $FileName;
+				}else{
+					continue;
+				}
+
+			}
+
+			return $ExpiredImages;
+
 		}
-		
-		public function SaveImageList(){
-			file_put_contents($this->ImageListPath, json_encode(array_values($this->ImageList)));
-		}
-		
-		public function DeleteElement_ImageList(){
-			$this->ImageNameKey = array_search($this->ImageName, $this->FileNameArray);
-			unset($this->ImageList[$this->ImageNameKey]);
-		}
+
+
 	}
-	
+
+	class ImageListManager {
+
+		//クラス内プライベート変数初期化
+		private $kvs;
+		private $redis;
+		private $ImageListPath;
+		private $TempImageList = "";
+		private $FileNameArray = "";
+
+		function __construct(){
+
+			global $EnableRedis;
+			global $LogFolder;
+			global $Redis_Host;
+			global $Redis_Port;
+
+			$this->kvs = $EnableRedis;
+			$this->ImageListPath = "../{$LogFolder}/ImageList.json";
+
+			if( $this->kvs ){
+				$this->redis = new Redis();
+				$this->redis->connect($Redis_Host, $Redis_Port);
+			}
+
+		}
+
+		public function Load(){
+
+			//ImageList.jsonが存在しない(同時にRedis上にも存在しない)
+			if( !file_exists( $this->ImageListPath )){ return; }
+
+			switch( $this->kvs ){
+
+				//Redis上から読み込む
+				case true:
+
+					$ImageList = $this->redis->get("jsp-imagelist");
+					$ListLoader = "Redis";
+
+					//ImageList.jsonは存在するが、Redis上には存在しない
+					if( !$ImageList ){
+						$ImageList = file_get_contents($this->ImageListPath);
+						$ListLoader = "JSON File";
+					}
+
+				break;
+
+				//ImageList.jsonから読み込む
+				case false:
+
+					$ImageList = file_get_contents($this->ImageListPath);
+					$ListLoader = "JSON File";
+
+				break;
+
+			}
+
+			//連想配列にして渡す
+			return [json_decode($ImageList, true), $ListLoader];
+
+		}
+
+		//ImageListにエントリを追加する
+		public function AddSaveEntry($EntryDatas){
+
+
+			//ImageList.jsonが存在しない場合は新規作成する
+			if( !file_exists( $this->ImageListPath )){
+				$ImageList = array($EntryDatas);
+			}else{
+				list($ImageList, $ListLoader) = $this->Load();
+				$ImageList = array_merge(array($EntryDatas), $ImageList);
+			}
+
+			//ImageList.jsonに保存する
+			file_put_contents($this->ImageListPath, json_encode($ImageList));
+
+			//Redisにもセットする
+			if( $this->kvs ){ $this->redis->set("jsp-imagelist", json_encode($ImageList)); }
+
+		}
+
+		//ImageListから該当のエントリを削除する
+		public function DeleteEntry($ImageName){
+
+			if( empty($this->TempImageList) ){
+				list($this->TempImageList, $ListLoader) = $this->Load();
+				$this->FileNameArray = array_column($this->TempImageList, "Name");
+			}
+
+			$ImageNameKey = array_search($ImageName, $this->FileNameArray);
+			unset($this->TempImageList[$ImageNameKey]);
+
+		}
+
+		//今保持しているImageListを保存する
+		public function StaticSaveEntry(){
+
+			//配列を整形する
+			$this->TempImageList = array_values($this->TempImageList);
+
+			//ImageList.jsonに保存する
+			file_put_contents($this->ImageListPath, json_encode($this->TempImageList));
+
+			//Redisにもセットする
+			if( $this->kvs ){ $this->redis->set("jsp-imagelist", json_encode($this->TempImageList)); }
+
+		}
+
+	}
+
+
 ?>

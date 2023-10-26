@@ -3,22 +3,21 @@
 	
 	/*
 		imagelist.php
-		jlab-script-plus 2.0 beta2
+		jlab-script-plus2 Beta3
 	*/
 	
 	
 	//manage.phpの読み込み
 	$OnlyLoadSettings = true;
 	require_once(__DIR__ . "/../manage.php");
+	require_once("./share/class.functions.php");
 	
 	//PHP基本設定
+	ini_set("display_errors", 0);
 	header("Content-type:application/json; charset=UTF-8");
 	header("Access-Control-Allow-Origin:{$FullURL}");
 	header("Access-Control-Allow-Headers:*");
 	header("Cache-Control: no-cache");
-	
-	//PHPエラー制御
-	error_reporting(E_ALL & ~E_NOTICE);
 	
 	//要求ページを取得
 	$CurrentPage = $_GET["p"];
@@ -27,12 +26,14 @@
 	}
 	
 	//画像リストを取得し、配列に変換
-	$ImageListPath = "../{$LogFolder}/ImageList.json";
-	if( !file_exists($ImageListPath) ){
-		header( "HTTP/1.1 404 Not Found" );
+	$LoadImageList = new ImageListManager();
+	list($ImageList, $ListLoadMode) = $LoadImageList->Load();
+	
+	//Streamが存在しない場合は404を返す
+	if( !$ImageList ){
+		http_response_code(404);
 		exit;
 	}
-	$ImageList = json_decode(file_get_contents($ImageListPath), true);
 	
 	//履歴のクリーンアップ
 	if( $CurrentPage == "cleanup" ){
@@ -56,8 +57,7 @@
 		exit;
 		
 	}
-	
-	
+
 	//画像が何枚あるかを数える
 	$ImageCount = count($ImageList);
 	
@@ -120,6 +120,7 @@
 	$OutputJSON = array();
 	
 	//このJSONデータのメタデータ
+	$OutputJSON[0]["Loader"] = $ListLoadMode;
 	$OutputJSON[0]["Page"] = $CurrentPage;
 	$OutputJSON[0]["Prev"] = $PrevBoxLink;
 	$OutputJSON[0]["Next"] = $NextBoxLink;

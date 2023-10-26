@@ -3,19 +3,20 @@
 	
 	/*
 		uploader.php
-		Version2.0 beta1 - jsp2 (jlab-script-plus Ver2.0)
+		jlab-script-plus2 Beta3
 	*/
 	
 	
 	//PHPの設定
 	set_time_limit(0);
-	ini_set("display_errors",0);
+	ini_set("display_errors", 0);
 	header("Content-Type:text/plain; charset=UTF-8");
 	
 	//manage.phpとモジュールPHPファイルの読み込み
 	$OnlyLoadSettings = true;
 	require_once(__DIR__ . "/../manage.php");
-	require_once(__DIR__ . "/share/class.image.php");
+	require_once("./share/class.image.php");
+	require_once("./share/class.functions.php");
 	
 	//アップローダーをロックする
 	//ロックができなかった場合、ロックができるまで待つ
@@ -24,12 +25,12 @@
 	flock( $LockFileOpen,LOCK_EX );
 	
 	//送信されたデータを取得する
-	$Image = $_FILES["Image"]["tmp_name"];
+	$RecivedImage = $_FILES["Image"]["tmp_name"];
 	$MIMEType = $_POST["MIMEType"];
 	$DeleteKey = $_POST["DeleteKey"];
 	
 	//送信されたデータが正しくない場合はエラーを返す
-	if(( $Image == "" )||( $MIMEType == "" )){
+	if(( $RecivedImage == "" )||( $MIMEType == "" )){
 		echo "400";
 		fclose($LockFileOpen);
 		exit;
@@ -69,7 +70,7 @@
 	
 	//画像のサイズを確認する
 	//上限を超えている場合はForbiddenを返す
-	if( filesize($Image) > ($LimitSize*1024*1024) ){
+	if( filesize($RecivedImage) > ($LimitSize*1024*1024) ){
 		echo "403";
 		fclose($LockFileOpen);
 		exit;
@@ -90,19 +91,27 @@
 		$FileName = $FileBaseName.date("ymdHis");
 		$UploadTime = date("y/m/d H:i:s");
 	}
+
+	//画像保存先を指定してオリジナル画像を保存する
 	$ImagePath = "../{$SaveFolder}/".$FileName.$ExtensionID;
-	move_uploaded_file($Image, $ImagePath);
+	move_uploaded_file($RecivedImage, $ImagePath);
 	
 	//画像サイズとファイルサイズを取得
 	list($ImageWidth,$ImageHeight,$MType,$Attr) = getimagesize($ImagePath);
 	$FileSizes = round( filesize($ImagePath)/1024 );
+
+	//サムネイル画像を作成
+	
+
 	
 	//サムネイル画像の作成
+
 	$CreateThumb = new Image($ImagePath);
 	$CreateThumb -> name("../{$ThumbSaveFolder}/".$FileName);
 	$CreateThumb -> width($MaxThumbWidth);
 	$CreateThumb -> save();
 	$ImageThumbPath = "../{$ThumbSaveFolder}/".$FileName.$ExtensionID;
+
 	
 	//イメージ情報をJSON形式で保存（新形式）
 	$ImageDataPath_json = "../{$LogFolder}/{$FileName}.json";
@@ -120,7 +129,19 @@
 	file_put_contents($ImageDataPath_json, json_encode($ImageDataArray,JSON_PRETTY_PRINT));
 	chmod($ImageDataPath_json, 0600); 
 	
-	//Streamに追加する
+	//ImageList.json(Stream)に追加する
+	$AddImageList = new ImageListManager();
+	$EntryDatas = array(
+		"Name" => $FileName.$ExtensionID,
+		"Time" => $UploadTime,
+		"Width" => $ImageWidth,
+		"Height" => $ImageHeight,
+		"Size" => $FileSizes,
+		"IP" => $_SERVER["REMOTE_ADDR"]
+	);
+	$AddImageList->AddSaveEntry($EntryDatas);
+
+	/*
 	$ImageListPath = "../{$LogFolder}/ImageList.json";
 	$ImageList = json_decode(file_get_contents($ImageListPath), true);
 	$newImageList[] = array(
@@ -139,6 +160,13 @@
 		$ImageList = array_merge($newImageList, $ImageList);
 		file_put_contents($ImageListPath, json_encode($ImageList));
 	}
+	
+	//Redisが使用できる場合はStreamのjsonデータをRedisに送る
+	$redis = new Redis();
+	$redis->connect("127.0.0.1", 6379);
+	$redis->set("jsp-imagelist", json_encode($ImageList));
+	*/
+	
 	
 	//終了
 	echo urlencode("{$FileName}{$ExtensionID}");

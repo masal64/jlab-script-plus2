@@ -2,7 +2,7 @@
 	
 	/*
 		uploader.js
-		jlab-script-plus 2.0
+		jlab-script-plus2 Beta3
 	*/
 	
 	

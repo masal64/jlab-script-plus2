@@ -188,22 +188,30 @@ a:hover {
 	border-bottom:1px solid #ccc;
 }
 
+#CustomList li:first-child {
+	border-radius:0 0 0 10px;
+}
+
 #CustomList li:last-child {
+	border-radius:0 0 10px 0;
 	border-right:1px solid #ccc;
 }
 
 /* --- ListTabs --- */
 #ListTabs {
-	margin:2em 0 0 2em;
+	width:calc(50% + 2px);
+	min-width:963px;
+	margin:0 auto;
 	padding:0;
 	list-style:none;
-	display: flex;
+	display:flex;
+	justify-content:center;
 }
 
 #ListTabs li {
-	width:110px;
-	height:35px;
-	line-height:35px;
+	width:calc(100%/3);
+	height:50px;
+	line-height:50px;
 	border-top:1px solid #ccc;
 	border-left:1px solid #ccc;
 	border-bottom:0;
@@ -213,18 +221,23 @@ a:hover {
 	cursor:pointer;
 }
 
+#ListTabs li:first-child {
+	border-radius:10px 0 0 0;
+}
+
 #ListTabs li:last-child {
+	border-radius:0 10px 0 0;
 	border-right:1px solid #ccc;
 }
 
 /* --- ImageList --- */
 
 #TabBox {
-	width:100%;
-	margin:0;
+	width:50%;
+	min-width:961px;
+	margin:0 auto;
 	background:white;
-	border-top:1px solid #ccc;
-	border-bottom:1px solid #ccc;
+	border:1px solid #ccc;
 }
 
 #ImageList, #HistoryImageList {
@@ -295,32 +308,27 @@ a:hover {
 
 /* --- Settings --- */
 #SettingList {
-	margin:0 3em;
+	margin:0;
 	padding:0;
 	list-style:none;
 }
 
-#SettingList li:nth-child(odd) {
+#SettingList li {
+	padding:2em 3em;
 	display:flex;
+	flex-wrap:wrap;
 	flex-direction:row;
 	align-items:center;
-	margin-top:1em;
-	padding-top:1em;
+	border-bottom:1px solid #ccc;
 }
 
-#SettingList li:nth-child(odd) div {
+#SettingList li div {
 	width:200px;
 }
 
-#SettingList li:nth-child(odd) div:first-child {
-	font-weight:bold;
-}
-
-#SettingList li:nth-child(even) {
-	margin-top:0.5em;
-	margin-bottom:1em;
-	padding-bottom:2em;
-	border-bottom:1px solid #ccc;
+#SettingList li div:nth-child(3){
+	width:100%;
+	padding-top:1em;
 	font-size:12px;
 	color:#666;
 }
@@ -377,5 +385,7 @@ a:hover {
 
 /* --- Footer --- */
 #FooterInner, #CustomFooter {
-	margin:2em 3em;
+	width:50%;
+	min-width:961px;
+	margin:2em auto;
 }

@@ -2,7 +2,7 @@
 	
 	/*
 		data-control.js
-		jlab-script-plus 2.0 beta2
+		jlab-script-plus2 Beta3
 	*/
 	
 	//追加のグローバル変数
@@ -182,8 +182,8 @@
 		}
 		
 		//Streamのリストを非表示・初期化
-		ElementSwitch("ImageList", "none", "");
-		ElementSwitch("ImageListTable", "none", "");
+		//ElementSwitch("ImageList", "none", "");
+		//ElementSwitch("ImageListTable", "none", "");
 		
 		//読み込み中表示
 		ElementSwitch("ImageListMessage", "block", "Stream読み込み中");
@@ -323,7 +323,7 @@
 		ElementSwitch("ImageList", "none", "");
 		ElementSwitch("HistoryImageList", "block", OutputHTML);
 		ElementSwitch("HistoryImageListTable", "flex", OutputListHTML);
-		PageScroll("ListTabs");
+		//PageScroll("ListTabs");
 		
 		return;
 		

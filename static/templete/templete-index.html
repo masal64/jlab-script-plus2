@@ -132,8 +132,8 @@
 					<option value="Enable">有効</option>
 				</select>
 				</div>
+				<div>ライトモードを有効にするとStreamを自動で読み込まなくなり、ナローな環境ではページの実行速度が速くなります。</div>
 			</li>
-			<li>ライトモードを有効にするとStreamを自動で読み込まなくなり、ナローな環境ではページの実行速度が速くなります。</li>
 			
 			<li>
 				<div>FastUpload</div>
@@ -143,11 +143,11 @@
 					<option value="Enable">有効</option>
 				</select>
 				</div>
-			</li>
-			<li>
-				FastUploadを有効にすると画像取り込み終了時に確認画面をスキップして自動的に画像をアップロードを開始します。<br>
-				FastUploadを使用するには削除キーを設定する必要があります。<br>
-				（管理者によりFastUploadが許可されていない場合は変更できません）
+				<div>
+					FastUploadを有効にすると画像取り込み終了時に確認画面をスキップして自動的に画像をアップロードを開始します。<br>
+					FastUploadを使用するには削除キーを設定する必要があります。<br>
+					（管理者によりFastUploadが許可されていない場合は変更できません）
+				</div>
 			</li>
 			
 			<li>
@@ -158,8 +158,8 @@
 					<option value="Enable" selected>有効</option>
 				</select>
 				</div>
+				<div>履歴の保存を有効にすると、ブラウザにアップロードした画像の履歴を保存します。</div>
 			</li>
-			<li>履歴の保存を有効にすると、ブラウザにアップロードした画像の履歴を保存します。</li>
 			
 			<li>
 				<div>Stream/履歴表示枚数</div>
@@ -172,27 +172,27 @@
 					<option value="50">50</option>
 				</select>
 				</div>
+				<div>Stream/履歴1ページに表示する画像の枚数を設定します。</div>
 			</li>
-			<li>Stream/履歴1ページに表示する画像の枚数を設定します。</li>
+			
 			
 			<li>
 				<div>アップロード履歴を整理</div>
 				<div><input type="button" class="PositiveBT" value="整理する" onclick="CleanUpUserData()"></div>
-			</li>
-			<li>期限切れになって削除された画像をアップロード履歴から削除して整理します。</li>
+				<div>期限切れになって削除された画像をアップロード履歴から削除して整理します。</div>
 			</li>
 			
 			<li>
 				<div>アップロード履歴を削除</div>
 				<div><input type="button" class="NegativeBT" value="すべて削除" onclick="InitializeUserData()"></div>
+				<div>アップロード履歴を削除します。削除後の復元はできません。</div>
 			</li>
-			<li>アップロード履歴を削除します。削除後の復元はできません。</li>
 			
 			<li>
 				<div>すべての設定を初期化</div>
 				<div><input type="button" class="NegativeBT" value="初期化" onclick="InitializeUserData('All')"></div>
+				<div>アップロード履歴を削除し、すべての設定を初期化します。初期化後の復元はできません。</div>
 			</li>
-			<li>アップロード履歴を削除し、すべての設定を初期化します。初期化後の復元はできません。</li>
 		</ul>
 		<div style="margin:2em 3em; font-size:12px">
 			設定とアップロード履歴はブラウザ固有のローカルストレージに保存されます。<br>
@@ -220,7 +220,7 @@
 	<footer>
 		<!--##CustomHTML2##-->
 		<div id="FooterInner">
-		<a href="https://github.com/kouki-kuriyama/jlab-script-plus2" target="_blank">jlab-script-plus 2.0 beta2</a>
+		<a href="https://github.com/kouki-kuriyama/jlab-script-plus2" target="_blank">jlab-script-plus2 Beta3</a>
 		</div>
 	</footer>
 

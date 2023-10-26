@@ -2,7 +2,7 @@
 	
 	/*
 		user-control.js
-		jlab-script-plus 2.0 beta2
+		jlab-script-plus2 Beta3
 	*/
 	
 	

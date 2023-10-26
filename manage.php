@@ -3,7 +3,7 @@
 	/*
 	
 	manage.php
-	jlab-script-plus 2.0 beta2
+	jlab-script-plus2 Beta3
 	
 	☆アップローダーの設定ファイルです。
 	　アップローダーの動作に必要な設定内容ですので、各環境に合った設定に変更してください。
@@ -39,7 +39,7 @@
 	//☆アップローダーのURL(http:// もしくは https://から)
 	//　index.html が表示されるURLを指定してください。
 	//　URLはプロトコルから始め、最後に必ず /(スラッシュ) で終わるように設定してください。
-	$FullURL = 'http://dev.snpht.org/jsp-dev/';
+	$FullURL = 'http://www.example.com/jlab-script-plus2/';
 
 	//☆ファイル名接頭語(不要な場合は空欄にしてください)
 	//　アップローダー稼働後に接頭語を変更すると、表示や自動削除などに不具合が生じる場合があるのでご注意ください。
@@ -69,7 +69,7 @@
 	
 	//☆詳細ファイル名を使用する
 	//　1秒に1枚以上の画像を受け付ける場合は true に設定します。
-	//　ファイル名と拡張子の間にマイクロ秒が追加されます。（ファイル名が4?5桁ほど長くなります）
+	//　ファイル名と拡張子の間にマイクロ秒が追加されます。（ファイル名が16桁になります）
 	$MicroSec = true;
 	
 	//☆FastUploadの許可
@@ -84,13 +84,22 @@
 	//　false にした場合、crontabでの定期削除は無効化され、ユーザーの画像をアップロードがトリガーとなり自動削除がされます。
 	//　（1日おきにcron, トリガーを動かす場合は $AutoDeletionConfig を ymd に、1時間おきに動かす場合は ymdH に変更してください）
 	$UseCrontab = false;
-	$AutoDeletionConfig = "ymdH";
-
+	$AutoDeletionConfig = 'ymdH';
+	
 	//★サムネイル画像の最大幅(ピクセル)
 	$MaxThumbWidth = 250;
 	
 	//★サムネイル画像の最大高さ(ピクセル)
 	$MaxThumbHeight = 250;
+	
+	//★Redis(インメモリKVS)の使用
+	// Redisを使用してStream(画像リスト)の読み出しをメモリ上から行うことにより、動作を高速化することができます。
+	// この機能を使用するには Redis と PHPの拡張パッケージ phpredis が必要です。
+	// （$Redis_HostにはUNIX Socketも指定することができます）
+	$EnableRedis = false;
+	$Redis_Host = '127.0.0.1';
+	$Redis_Port = '6379';
+	
 	
 	//★画像配信URLの変更
 	//　mod_rewrite機能またはURL書き換え機能を使って画像配信URLを変更するときに設定します。特に使用しない場合は空欄にしてください。
@@ -125,6 +134,9 @@
 	/#/#/#/#/#/#/#/#/#/#/#/#/#/#/#/#/#/#/#/#/#/#/#/#/#/#/#
 	
 	*/
+	
+	//メッセージが何も表示されず500エラーが出る場合は下の設定を1に変更してください
+	ini_set("display_errors", 0);
 	
 	if( !$OnlyLoadSettings ){
 		
@@ -180,6 +192,12 @@
 				echo "　　　{$LogFolder} フォルダのパーミッションをご確認ください。\n\n";
 				exit;
 			}
+
+			if( !is_writable("./application/share/ImageList.lock") ){
+				echo "［！］ImageList.lock へのアクセス権限がありません\n";
+				echo "　　　application/share にある ImageList.lock のパーミッションをご確認ください。\n\n";
+				exit;
+			}
 			
 			include_once("./custom-html.php");
 			
@@ -212,7 +230,7 @@
 			$TempleteIndex = str_replace("<!--##CustomHTML1##-->", $CustomHTML1, $TempleteIndex);
 			$TempleteIndex = str_replace("<!--##CustomHTML2##-->", "<div id=\"CustomFooter\">".$CustomHTML2."</div>\n", $TempleteIndex);
 			if( file_put_contents("./index.html", $TempleteIndex) === false ){
-				echo "［！］index.html の保存に失敗しました\n\n";
+				echo "［！］index.html の保存に失敗しました。\n\n";
 				exit;
 			}
 			
@@ -225,9 +243,10 @@
 			$ThumbURL = $ThumbRewriteURL != "" ? $ThumbRewriteURL : "./{$ThumbSaveFolder}/";
 			$TempleteMaster = str_replace("<!--##ThumbURL##-->", $ThumbURL, $TempleteMaster);
 			if( file_put_contents("./master.js", $TempleteMaster) === false ){
-				echo "［！］master.js の保存に失敗しました\n\n";
+				echo "［！］master.js の保存に失敗しました。\n\n";
 				exit;
 			}
+			
 			header("Location:./");
 		}else{
 			header("Location:./?ErrorMessage=設定を変更するには[master.js]を削除してください");

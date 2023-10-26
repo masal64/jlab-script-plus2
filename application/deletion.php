@@ -3,12 +3,12 @@
 	
 	/*
 		deletion.php
-		jlab-script-plus 2.0 beta2
+		jlab-script-plus2 Beta3
 	*/
 	
 	
 	set_time_limit(0);
-	ini_set("display_errors",0);
+	ini_set("display_errors", 0);
 	header("Content-Type:text/plain; charset=UTF-8");
 	
 	$OnlyLoadSettings = true;
@@ -24,50 +24,45 @@
 	$ChangedImageList = false;
 	$Response = Array();
 	
+	//削除画像ファイル名か削除キーが無い場合は Forbidden を返す
 	if(( !$DeleteImageNames )||( $DeleteKey == "" )){
 		fclose($LockFileOpen);
 		http_response_code(403);
 		exit;
 	}
 	
-	$DeletionTask = new EditImages();
-	$DeletionTask->DeleteKey = $DeleteKey;
-	
+	//画像ファイル名数をカウントする
 	$DeleteImageCount = count($DeleteImageNames);
-	for($ExecuteCount=0; $ExecuteCount < $DeleteImageCount; $ExecuteCount++ ){
 	
-		$DeletionTask->ImageName = $DeleteImageNames[$ExecuteCount];
-		$CheckingResponse = $DeletionTask->CheckDeleteKey();
-		
-		if( $CheckingResponse === 200 ){
-			
-			$DeletionTask->DeleteImage();
-			$ChangedImageList = true;
-			$Response[$DeleteImageNames[$ExecuteCount]] = 0;
-			
-		}else if( $CheckingResponse === 403 ){
-			
-			$Response[$DeleteImageNames[$ExecuteCount]] = 1;
-			continue;
-			
-		}else if( $CheckingResponse === 404 ){
-			
+	//画像管理・ImageList管理インスタンス
+	$ImageManager = new ImageManager();
+	$EditImageList = new ImageListManager();
+	
+	//ファイル数分ループ
+	for($ExecuteCount=0; $ExecuteCount < $DeleteImageCount; $ExecuteCount++ ){
+
+		//削除キーの照合
+		$RegistedDeleteKey = $ImageManager->GetImageInfo($DeleteImageNames[$ExecuteCount], "DeleteKey");
+		if( $DeleteKey === false ){
 			$Response[$DeleteImageNames[$ExecuteCount]] = 2;
 			continue;
-			
+		}else if( $DeleteKey != $RegistedDeleteKey ){
+			$Response[$DeleteImageNames[$ExecuteCount]] = 1;
+			continue;
 		}
-		
-		if( $ExecuteCount == 0 ){
-			$DeletionTask->LoadImageList_array();
-		}
-		
-		$DeletionTask->DeleteElement_ImageList();
+
+		//画像を削除する
+		$ImageManager->DeleteImage($DeleteImageNames[$ExecuteCount]);
+		$Response[$DeleteImageNames[$ExecuteCount]] = 0;
+
+		//ImageListから該当エントリを削除
+		$EditImageList->DeleteEntry($DeleteImageNames[$ExecuteCount]);
+		$ChangedImageList = true;
 		
 	}
-		
-	if( $ChangedImageList ){
-		$DeletionTask->SaveImageList();
-	}
+	
+	//ImageListに変更があった場合は保存する
+	if( $ChangedImageList ){ $EditImageList->StaticSaveEntry(); }
 	
 	fclose($LockFileOpen);
 	echo json_encode($Response);
